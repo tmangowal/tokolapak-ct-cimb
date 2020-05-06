@@ -15,7 +15,7 @@ import { faUser } from "@fortawesome/free-regular-svg-icons";
 
 import "./Navbar.css";
 import ButtonUI from "../Button/Button";
-import { logoutHandler } from "../../../redux/actions";
+import { logoutHandler, navbarInputHandler } from "../../../redux/actions";
 
 const CircleBg = ({ children }) => {
   return <div className="circle-bg">{children}</div>;
@@ -58,6 +58,7 @@ class Navbar extends React.Component {
           className="px-5 d-flex flex-row justify-content-start"
         >
           <input
+            onChange={this.props.onChangeSearch}
             onFocus={this.onFocus}
             onBlur={this.onBlur}
             className={`search-bar ${
@@ -79,16 +80,34 @@ class Navbar extends React.Component {
                   <p className="small ml-3 mr-4">{this.props.user.username}</p>
                 </DropdownToggle>
                 <DropdownMenu className="mt-2">
-                  <DropdownItem>
-                    <Link
-                      style={{ color: "inherit", textDecoration: "none" }}
-                      to="/admin/dashboard"
-                    >
-                      Dashboard
-                    </Link>
-                  </DropdownItem>
-                  <DropdownItem>Members</DropdownItem>
-                  <DropdownItem>Payments</DropdownItem>
+                  {this.props.user.role == "admin" ? (
+                    <>
+                      <DropdownItem>
+                        <Link
+                          style={{ color: "inherit", textDecoration: "none" }}
+                          to="/admin/dashboard"
+                        >
+                          Dashboard
+                        </Link>
+                      </DropdownItem>
+                      <DropdownItem>Members</DropdownItem>
+                      <DropdownItem>
+                        <Link
+                          style={{ color: "inherit", textDecoration: "none" }}
+                          to="/admin/payments"
+                        >
+                          Payments
+                        </Link>
+                      </DropdownItem>
+                    </>
+                  ) : (
+                    <>
+                      <DropdownItem>Wishlist</DropdownItem>
+                      <DropdownItem>
+                        <Link to="/history">History</Link>
+                      </DropdownItem>
+                    </>
+                  )}
                 </DropdownMenu>
               </Dropdown>
               <Link
@@ -103,7 +122,7 @@ class Navbar extends React.Component {
                 />
                 <CircleBg>
                   <small style={{ color: "#3C64B1", fontWeight: "bold" }}>
-                    4
+                    {this.props.user.cartItems}
                   </small>
                 </CircleBg>
               </Link>
@@ -149,6 +168,7 @@ const mapStateToProps = (state) => {
 
 const mapDispatchToProps = {
   onLogout: logoutHandler,
+  onChangeSearch: navbarInputHandler,
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(Navbar);

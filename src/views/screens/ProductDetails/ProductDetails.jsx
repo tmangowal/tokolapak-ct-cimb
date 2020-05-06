@@ -7,6 +7,7 @@ import ButtonUI from "../../components/Button/Button";
 import TextField from "../../components/TextField/TextField";
 import Axios from "axios";
 import { API_URL } from "../../../constants/API";
+import { fillCart } from "../../../redux/actions";
 
 class ProductDetails extends React.Component {
   state = {
@@ -24,19 +25,49 @@ class ProductDetails extends React.Component {
     // POST method ke /cart
     // Isinya: userId, productId, quantity
     // console.log(this.props.user.id);
-    console.log(this.state.productData.id);
-    Axios.post(`${API_URL}/carts`, {
-      userId: this.props.user.id,
-      productId: this.state.productData.id,
-      quantity: 1,
-    })
-      .then((res) => {
-        console.log(res);
-        swal("Add to cart", "Your item has been added to your cart", "success");
-      })
-      .catch((err) => {
-        console.log(err);
-      });
+
+    Axios.get(`${API_URL}/carts`, {
+      params: {
+        userId: this.props.user.id,
+        productId: this.state.productData.id,
+      },
+    }).then((res) => {
+      if (res.data.length) {
+        Axios.put(`${API_URL}/carts/${res.data[0].id}`, {
+          userId: this.props.user.id,
+          productId: this.state.productData.id,
+          quantity: res.data[0].quantity + 1,
+        })
+          .then((res) => {
+            swal(
+              "Add to cart",
+              "Your item has been added to your cart",
+              "success"
+            );
+            this.props.onFillCart(this.props.user.id);
+          })
+          .catch((err) => {
+            console.log(err);
+          });
+      } else {
+        Axios.post(`${API_URL}/carts`, {
+          userId: this.props.user.id,
+          productId: this.state.productData.id,
+          quantity: 1,
+        })
+          .then((res) => {
+            swal(
+              "Add to cart",
+              "Your item has been added to your cart",
+              "success"
+            );
+            this.props.onFillCart(this.props.user.id);
+          })
+          .catch((err) => {
+            console.log(err);
+          });
+      }
+    });
   };
 
   componentDidMount() {
@@ -97,4 +128,8 @@ const mapStateToProps = (state) => {
   };
 };
 
-export default connect(mapStateToProps)(ProductDetails);
+const mapDispatchToProps = {
+  onFillCart: fillCart,
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(ProductDetails);
